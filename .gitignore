@@ -5,6 +5,7 @@
 *.d
 *.log
 dump.rdb
+src/config
 redis-benchmark
 redis-check-aof
 redis-check-rdb
@@ -38,3 +39,4 @@ Makefile.dep
 .ccls-cache/*
 compile_commands.json
 redis.code-workspace
+cmake-build-debug/
