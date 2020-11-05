@@ -269,7 +269,7 @@ sds sdsMakeRoomFor(sds s, size_t addlen) {
 
     hdrlen = sdsHdrSize(type);
     if (oldtype==type) {
-        // 追加分配空间.newlen更新
+        // 追加分配空间.newlen更新. usable是newsh的大小
         newsh = s_realloc_usable(sh, hdrlen+newlen+1, &usable);
         if (newsh == NULL) return NULL;
         // 更新s指向到buf
@@ -291,6 +291,7 @@ sds sdsMakeRoomFor(sds s, size_t addlen) {
         // 给新分配的sds结构体初始化len. len为buf中字符串的长度.newlen是扩容的空间
         sdssetlen(s, len);
     }
+    // 总大小 - 头信息 - '\0'
     usable = usable-hdrlen-1;
     if (usable > sdsTypeMaxSize(type))
         usable = sdsTypeMaxSize(type);
