@@ -75,14 +75,15 @@ static inline char sdsReqType(size_t string_size) {
 
 static inline size_t sdsTypeMaxSize(char type) {
     if (type == SDS_TYPE_5)
-        return (1<<5) - 1;
+        // 0000 0001
+        return (1<<5) - 1;  // 32 - 1 = 31
     if (type == SDS_TYPE_8)
-        return (1<<8) - 1;
+        return (1<<8) - 1;  // 256 - 1 = 255
     if (type == SDS_TYPE_16)
-        return (1<<16) - 1;
+        return (1<<16) - 1; // 65536 -1 = 65535
 #if (LONG_MAX == LLONG_MAX)
     if (type == SDS_TYPE_32)
-        return (1ll<<32) - 1;
+        return (1ll<<32) - 1; // 2 ^ 32 -1 = 4294967295
 #endif
     return -1; /* this is equivalent to the max SDS_TYPE_64 or SDS_TYPE_32 */
 }
@@ -101,26 +102,36 @@ static inline size_t sdsTypeMaxSize(char type) {
  * end of the string. However the string is binary safe and can contain
  * \0 characters in the middle, as the length is stored in the sds header. */
 sds sdsnewlen(const void *init, size_t initlen) {
+    // 这个指针会指向整个sds开始的地方.
     void *sh;
+    // sds 实际上也是一个指针. char *
     sds s;
+    // flag:根据不同的长度返回不同的类型的sds
     char type = sdsReqType(initlen);
     /* Empty strings are usually created in order to append. Use type 8
      * since type 5 is not good at this. */
     if (type == SDS_TYPE_5 && initlen == 0) type = SDS_TYPE_8;
+    // 获取struct的size
     int hdrlen = sdsHdrSize(type);
+    // flag 指针，这个指针就是用来表示sds 是哪个类型的
     unsigned char *fp; /* flags pointer. */
+    // 可使用空间:
     size_t usable;
-
+    // 分配空间: sdshdrx结构体的大小 + 字符串的长度 + '\0'
     sh = s_malloc_usable(hdrlen+initlen+1, &usable);
     if (sh == NULL) return NULL;
     if (init==SDS_NOINIT)
         init = NULL;
     else if (!init)
         memset(sh, 0, hdrlen+initlen+1);
+    // 计数到sds struct中buf的地址
     s = (char*)sh+hdrlen;
+    // flag 的地址: s[-1]. 前一个位置
     fp = ((unsigned char*)s)-1;
+    // 可使用空间大小更新为: 总的可使用空间 - 头的长度 - '\0'
     usable = usable-hdrlen-1;
     if (usable > sdsTypeMaxSize(type))
+        // 如果超过当前限制的长度，强制更新为 当前类型的最大值.
         usable = sdsTypeMaxSize(type);
     switch(type) {
         case SDS_TYPE_5: {
@@ -128,9 +139,13 @@ sds sdsnewlen(const void *init, size_t initlen) {
             break;
         }
         case SDS_TYPE_8: {
+            //这里使用了内连方法，让sh这个变量赋值了struct sdshdr
             SDS_HDR_VAR(8,s);
+            // 初始化长度
             sh->len = initlen;
+            // 记录可以使用的大小
             sh->alloc = usable;
+            //fp 对应的地址赋值了对应的type，type 的取值是1-4
             *fp = type;
             break;
         }
@@ -157,8 +172,11 @@ sds sdsnewlen(const void *init, size_t initlen) {
         }
     }
     if (initlen && init)
+        // copy 字符串到buf
         memcpy(s, init, initlen);
+    // 写入'\0'
     s[initlen] = '\0';
+    // 返回的是sds, 是sh->buf
     return s;
 }
 
@@ -182,6 +200,8 @@ sds sdsdup(const sds s) {
 /* Free an sds string. No operation is performed if 's' is NULL. */
 void sdsfree(sds s) {
     if (s == NULL) return;
+    // sh: 是在堆中申请的地址.
+    // sh: buf的地址 - 头的大小 => sdshdrx的开始地址
     s_free((char*)s-sdsHdrSize(s[-1]));
 }
 

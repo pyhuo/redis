@@ -44,18 +44,24 @@ typedef char *sds;
 
 /* Note: sdshdr5 is never used, we just access the flags byte directly.
  * However is here to document the layout of type 5 SDS strings. */
+/* packed属性：使用该属性可以使得变量或者结构体成员使用最小的对齐方式
+ * lsb 代表有效位的意思
+ * */
 struct __attribute__ ((__packed__)) sdshdr5 {
     unsigned char flags; /* 3 lsb of type, and 5 msb of string length */
     char buf[];
 };
 struct __attribute__ ((__packed__)) sdshdr8 {
-    uint8_t len; /* used */
+    uint8_t len; /* used 已经使用的长度*/
+    // 分配的长度，等于buf[]的总长度-1，因为buf有包括一个/0的结束符
     uint8_t alloc; /* excluding the header and null terminator */
+    // 只有3位有效位，因为类型的表示就是0到4，所有这个8位的flags 有5位没有被用到
     unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    // 实际的字符串存在这里
     char buf[];
 };
 struct __attribute__ ((__packed__)) sdshdr16 {
-    uint16_t len; /* used */
+    uint16_t len; /* used已经使用的长度 */
     uint16_t alloc; /* excluding the header and null terminator */
     unsigned char flags; /* 3 lsb of type, 5 unused bits */
     char buf[];
