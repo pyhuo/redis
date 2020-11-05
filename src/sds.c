@@ -249,15 +249,17 @@ sds sdsMakeRoomFor(sds s, size_t addlen) {
 
     /* Return ASAP if there is enough space left. */
     if (avail >= addlen) return s;
-
+    // 获取sds 的长度
     len = sdslen(s);
+    // 获取sds的起始地址.sh
     sh = (char*)s-sdsHdrSize(oldtype);
+    // 新的长度: 2倍增加
     newlen = (len+addlen);
     if (newlen < SDS_MAX_PREALLOC)
         newlen *= 2;
     else
         newlen += SDS_MAX_PREALLOC;
-
+    // 根据newlen计算出新的类型
     type = sdsReqType(newlen);
 
     /* Don't use type 5: the user is appending to the string and type 5 is
@@ -267,18 +269,26 @@ sds sdsMakeRoomFor(sds s, size_t addlen) {
 
     hdrlen = sdsHdrSize(type);
     if (oldtype==type) {
+        // 追加分配空间.newlen更新
         newsh = s_realloc_usable(sh, hdrlen+newlen+1, &usable);
         if (newsh == NULL) return NULL;
+        // 更新s指向到buf
         s = (char*)newsh+hdrlen;
     } else {
         /* Since the header size changes, need to move the string forward,
          * and can't use realloc */
+        // 重新分配空间.
         newsh = s_malloc_usable(hdrlen+newlen+1, &usable);
         if (newsh == NULL) return NULL;
+        // copy旧s->buf 到新的newsh->buf
         memcpy((char*)newsh+hdrlen, s, len+1);
+        // 释放旧的sh
         s_free(sh);
+        // s更新为新的buf
         s = (char*)newsh+hdrlen;
+        // 写入新type
         s[-1] = type;
+        // 给新分配的sds结构体初始化len. len为buf中字符串的长度.newlen是扩容的空间
         sdssetlen(s, len);
     }
     usable = usable-hdrlen-1;
