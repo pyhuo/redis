@@ -97,7 +97,6 @@ struct __attribute__ ((__packed__)) sdshdr64 {
  * 1:
  * 2:
  * 3:
- *
  */
 static inline size_t sdslen(const sds s) {
     unsigned char flags = s[-1];
@@ -115,7 +114,12 @@ static inline size_t sdslen(const sds s) {
     }
     return 0;
 }
-
+/*
+ * alloc: sds->buf的总的空间
+ * len: buf中已经使用的空间
+ * avail: 本次buf可以使用的空间为， alloc - len
+ * sh: 通过SDS_HDR_VAR宏完成sds转换为sh. sds对象结构的开始地址.可以访问len.
+ * */
 static inline size_t sdsavail(const sds s) {
     unsigned char flags = s[-1];
     switch(flags&SDS_TYPE_MASK) {
@@ -210,6 +214,11 @@ static inline size_t sdsalloc(const sds s) {
     return 0;
 }
 
+/*
+ * s: sds类型对象中的buf
+ * sh: sds类型对象对应的开始地址
+ * sh->alloc: buf对应的大小
+ * */
 static inline void sdssetalloc(sds s, size_t newlen) {
     unsigned char flags = s[-1];
     switch(flags&SDS_TYPE_MASK) {
