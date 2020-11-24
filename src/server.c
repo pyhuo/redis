@@ -5245,10 +5245,21 @@ int iAmMaster(void) {
             (server.cluster_enabled && nodeIsMaster(server.cluster->myself)));
 }
 
+void test_main(void) {
+//    const char *ch = "0123456789012345678901234567890123456789";
+    const char *ch = "0123";
+    sds sch = sdsnew(ch);
+    printf("sds len:%ld buf:%s\n", sdslen(sch), sch);
+    sdsfree(sch);
+}
+
 int main(int argc, char **argv) {
     struct timeval tv;
     int j;
     char config_from_stdin = 0;
+
+    test_main();
+    return 0;
 
 #ifdef REDIS_TEST
     if (argc == 3 && !strcasecmp(argv[1], "test")) {

@@ -41,6 +41,13 @@
 
 const char *SDS_NOINIT = "SDS_NOINIT";
 
+/* 根据type计算sds的头信息的长度.
+ * 0:
+ * 1:
+ * 2:
+ * 3:
+ *
+ * */
 static inline int sdsHdrSize(char type) {
     switch(type&SDS_TYPE_MASK) {
         case SDS_TYPE_5:
@@ -57,15 +64,26 @@ static inline int sdsHdrSize(char type) {
     return 0;
 }
 
+/* 根据字符串的长度计算出对应的类型.[0, 1, 2, 3, 4]
+ * 0< x < 2^5: 0
+ * 2^5 < x < 2^8: 1
+ * 2^8 < x < 2^16: 2
+ * 2^16 < x < 2^32: 3
+ * 最大字符串. 2^64: 4
+ * */
 static inline char sdsReqType(size_t string_size) {
     if (string_size < 1<<5)
+        // 2^5 = 32
         return SDS_TYPE_5;
     if (string_size < 1<<8)
+        // 2^8 = 256
         return SDS_TYPE_8;
     if (string_size < 1<<16)
+        // 2^16 = 65536
         return SDS_TYPE_16;
 #if (LONG_MAX == LLONG_MAX)
     if (string_size < 1ll<<32)
+        // 2^32 = ...
         return SDS_TYPE_32;
     return SDS_TYPE_64;
 #else
@@ -73,6 +91,13 @@ static inline char sdsReqType(size_t string_size) {
 #endif
 }
 
+/* 根据类型计算每一种类型种的最大值.
+ * 0: 2^5 -1
+ * 1: 2^ 8 - 1
+ * 2: 2^16 -1
+ * 3: 2^32 - 1
+ * 其他返回-1
+ * */
 static inline size_t sdsTypeMaxSize(char type) {
     if (type == SDS_TYPE_5)
         // 0000 0001
@@ -188,6 +213,9 @@ sds sdsempty(void) {
 
 /* Create a new sds string starting from a null terminated C string. */
 sds sdsnew(const char *init) {
+    // init是指向char*的指针.
+    // 空指针. 初始化长度为0
+    // 非空指针，使用strlen计算.
     size_t initlen = (init == NULL) ? 0 : strlen(init);
     return sdsnewlen(init, initlen);
 }

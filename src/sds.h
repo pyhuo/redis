@@ -90,6 +90,15 @@ struct __attribute__ ((__packed__)) sdshdr64 {
 #define SDS_HDR(T,s) ((struct sdshdr##T *)((s)-(sizeof(struct sdshdr##T))))
 #define SDS_TYPE_5_LEN(f) ((f)>>SDS_TYPE_BITS)
 
+/*
+ * 根据flag计算sds长度
+ * type: flag & SDS_TYPE_MASK
+ * 0: flag中的低三位放类型，高5位放长度.
+ * 1:
+ * 2:
+ * 3:
+ *
+ */
 static inline size_t sdslen(const sds s) {
     unsigned char flags = s[-1];
     switch(flags&SDS_TYPE_MASK) {
@@ -138,6 +147,7 @@ static inline void sdssetlen(sds s, size_t newlen) {
     switch(flags&SDS_TYPE_MASK) {
         case SDS_TYPE_5:
             {
+                //前三位放类型，候五位放长度.
                 unsigned char *fp = ((unsigned char*)s)-1;
                 *fp = SDS_TYPE_5 | (newlen << SDS_TYPE_BITS);
             }
