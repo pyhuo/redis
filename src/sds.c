@@ -282,7 +282,7 @@ sds sdsMakeRoomFor(sds s, size_t addlen) {
     if (avail >= addlen) return s;
     // 获取sds 的长度
     len = sdslen(s);
-    // 获取sds的起始地址.sh
+    // 获取s的对象结构的开始地址.
     sh = (char*)s-sdsHdrSize(oldtype);
     // 计算新的长度: 新长度*2
     newlen = (len+addlen);

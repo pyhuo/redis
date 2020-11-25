@@ -5248,16 +5248,16 @@ int iAmMaster(void) {
 void test_main(void) {
 //    const char *ch1 = "0123456789012345678901234567890123456789";
     const char *ch1 = "01234567890123456789012345678911";
+//    const char *ch1 = "012";
     const char *ch2 = "456";
     sds sch1 = sdsnew(ch1);
-    printf("sds avail:%ld\n", sdsavail(sch1));
 //    sds sch2 = sdsnew(ch2);
-    printf("sds len:%ld buf:%s\n", sdslen(sch1), sch1);
+    printf("sds1 len:%ld avail:%ld buf:%s\n", sdslen(sch1), sdsavail(sch1), sch1);
     sds sch2 = sdscat(sch1, ch2);
     printf("sds2 len:%ld buf:%s\n", sdslen(sch2), sch2);
-
-    sdsfree(sch1);
-    sdsfree(sch2);
+    printf("sds1 len:%ld buf:%s\n", sdslen(sch1), sch1);
+//    sdsfree(sch1);
+//    sdsfree(sch2);
 //    sdsclear(sch2);
 
 }
