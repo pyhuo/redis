@@ -287,8 +287,10 @@ sds sdsMakeRoomFor(sds s, size_t addlen) {
     // 计算新的长度: 新长度*2
     newlen = (len+addlen);
     if (newlen < SDS_MAX_PREALLOC)
+        // 新长度小于1M, 分配2倍
         newlen *= 2;
     else
+        // 新长度大于等于1M,新长度+1M
         newlen += SDS_MAX_PREALLOC;
     // 根据newlen计算出新的类型
     type = sdsReqType(newlen);
@@ -481,7 +483,6 @@ sds sdsgrowzero(sds s, size_t len) {
 sds sdscatlen(sds s, const void *t, size_t len) {
     // 当前sds字符串的长度.
     size_t curlen = sdslen(s);
-    //
     s = sdsMakeRoomFor(s,len);
     if (s == NULL) return NULL;
     memcpy(s+curlen, t, len);
