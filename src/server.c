@@ -5245,29 +5245,40 @@ int iAmMaster(void) {
             (server.cluster_enabled && nodeIsMaster(server.cluster->myself)));
 }
 
-void test_main(void) {
-//    const char *ch1 = "0123456789012345678901234567890123456789";
-    const char *ch1 = "01234567890123456789012345678911";
-//    const char *ch1 = "012";
-    const char *ch2 = "456";
-    sds sch1 = sdsnew(ch1);
-//    sds sch2 = sdsnew(ch2);
-    printf("sds1 len:%ld avail:%ld buf:%s\n", sdslen(sch1), sdsavail(sch1), sch1);
-    sds sch2 = sdscat(sch1, ch2);
-    printf("sds2 len:%ld buf:%s\n", sdslen(sch2), sch2);
-    printf("sds1 len:%ld buf:%s\n", sdslen(sch1), sch1);
-//    sdsfree(sch1);
+void test_sds(void) {
+//    const char *ch1 = "01234567890123456789012345678911";
+//    const char *ch2 = "456";
+//    sds sch1 = sdsnew(ch1);
+//    printf("sds1 len:%ld avail:%ld buf:%s\n", sdslen(sch1), sdsavail(sch1), sch1);
+    /*
+     * sdscat:不触发扩容，sch2和sch1是同一个地址
+     * */
+//    sds sch2 = sdscat(sch1, ch2);
+//    printf("sds1 len:%ld buf:%s %p\n", sdslen(sch1), sch1, sch1);
+//    printf("sds2 len:%ld buf:%s %p\n", sdslen(sch2), sch2, sch2);
 //    sdsfree(sch2);
-//    sdsclear(sch2);
 
+    /*
+     * 测试扩容:
+     * sch3 中avail是0，sdscat 触发扩容.
+     * */
+    const char *ch3 = "012"; // sdshdr5
+    const char *ch4 = "345"; // sdshdr5
+    sds sch3 = sdsnew(ch3);
+    printf("sds3 len:%ld avail:%ld buf:%p %s\n", sdslen(sch3), sdsavail(sch3), sch3, sch3);
+    sds sch4 = sdscat(sch3, ch4);
+    printf("sch4 len:%ld avail:%ld buf:%p %s\n", sdslen(sch4), sdsavail(sch4), ch4, sch4);
+    sdsfree(sch4);
+}
+void test_main(void) {
+    test_sds();
 }
 
 int main(int argc, char **argv) {
+    test_main();
     struct timeval tv;
     int j;
     char config_from_stdin = 0;
-
-    test_main();
     return 0;
 
 #ifdef REDIS_TEST
