@@ -5270,8 +5270,28 @@ void test_sds(void) {
     printf("sch4 len:%ld avail:%ld buf:%p %s\n", sdslen(sch4), sdsavail(sch4), ch4, sch4);
     sdsfree(sch4);
 }
+void test_sizeof(void) {
+    printf("sizeof int:%ld\n", sizeof(int));
+    printf("sizeof unsigned long:%ld\n", sizeof(unsigned long));
+    printf("sizeof zskiplistNode:%ld\n", sizeof(zskiplistNode));
+    printf("sizeof sds:%ld\n", sizeof(sds));
+    printf("sizeof char *:%ld\n", sizeof(char *));
+    printf("sizeof int *:%ld\n", sizeof(int *));
+    printf("sizeof zskiplistNode *:%ld\n", sizeof(zskiplistNode *));
+    printf("sizeof zskip_list:%ld\n", sizeof(zskiplist));
+}
+
+void test_zskip_list(void) {
+    zskiplist * zsl = zslCreate();
+    printf("zskiplist addr:%p length:%ld\n", zsl, zsl->length);
+    zslFree(zsl);
+}
+
 void test_main(void) {
-    test_sds();
+//    test_sizeof();
+//    test_sds();
+    test_zskip_list();
+//    exit(-1);
 }
 
 int main(int argc, char **argv) {
@@ -5279,7 +5299,6 @@ int main(int argc, char **argv) {
     struct timeval tv;
     int j;
     char config_from_stdin = 0;
-    return 0;
 
 #ifdef REDIS_TEST
     if (argc == 3 && !strcasecmp(argv[1], "test")) {
